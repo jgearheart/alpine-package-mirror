@@ -25,7 +25,7 @@ resource "aws_security_group" "cosmos-alpine-mirror" {
     }
 
 
-  vpc_id = "${aws_vpc.cosmos-vrouter-testing.id}"
+  vpc_id = "${var.vpcid}"
 
     tags {
         Name = "cosmos-vrouter-SG"
@@ -46,9 +46,8 @@ resource "aws_efs_file_system" "cosmos-efs" {
 
 resource "aws_efs_mount_target" "client-mount-target" {
     count = "${length(split(", ", lookup(var.azs, var.region)))}"
-    file_system_id = "${aws_efs_file_system.client-efs.id}"
+    file_system_id = "${aws_efs_file_system.cosmos-efs.id}"
     subnet_id = "${var.subnetid}"
-    security_groups = ["${aws_security_group.cosmos-efs.id}"]
 }
 
 
@@ -70,14 +69,14 @@ resource "aws_instance" "cosmos-alpine-mirror" {
 
   provisioner "remote-exec" {
       inline = [
+         "echo Y | sudo apt-get install nfs-common",
+         "sudo mkdir efs",
+         "sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 ${aws_efs_mount_target.client-mount-target.dns_name}:/ efs",
          "echo Y | sudo apt-get update",
          "echo Y | sudo apt-get install python",
          "echo Y | sudo apt-get install docker.io",
          "echo Y | sudo apt-get install make",
-         "sudo mkdir -p /mnt/efs", 
-         "sudo mount -t nfs4 -o nfsvers=4.1 ${aws_efs_mount_target.client-mount-target.dns_name}:/ efs", 
-         "sudo su -c \"echo '${aws_efs_mount_target.client-mount-target.dns_name}:/ efs nfs defaults,vers=4.1 0 0' >> /etc/fstab\"" #create fstab entry to ensure automount on reboots
-         "git clone https://github.com/jgearheart/alpine-package-mirror.git"
+         "git clone https://github.com/jgearheart/alpine-package-mirror.git",
          "cd alpine-package-mirror/",
          "BUILD_ID=latest make build",
          "sudo docker-compose up -d",

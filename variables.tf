@@ -7,6 +7,10 @@ variable "aws_region" {
     description = "EC2 Region for the VPC"
     default = "us-west-2"
 }
+variable "region" {
+
+    default = "us-west-2"
+}
 variable "vpcid" {
     description = "enter your VPC id"
     default = "vpc-d3367db4"
@@ -15,7 +19,7 @@ variable "vpcid" {
 variable "amis" {
     description = "AMIs by region"
     default = {
-        us-west-1 = "ami-a58d0dc5" # ubuntu 16.04 LTS
+        us-west-2 = "ami-a58d0dc5" # ubuntu 16.04 LTS
     }
 }
 
@@ -26,9 +30,9 @@ variable "subnetid" {
 variable "azs" {
 
     default = {
-        "us-west-2" = "us-west-2a, us-west-2b, us-west-2c"
+        "us-west-2" = "us-west-2b"
     }
-
+}
 variable "PATH_TO_PRIVATE_KEY" {
   default = "~/.ssh/cosmos-admin"
 }
