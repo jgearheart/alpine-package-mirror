@@ -69,12 +69,13 @@ resource "aws_instance" "cosmos-alpine-mirror" {
 
   provisioner "remote-exec" {
       inline = [
+         "echo Y | sudo apt-get update",
          "echo Y | sudo apt-get install nfs-common",
          "sudo mkdir efs",
          "sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 ${aws_efs_mount_target.client-mount-target.dns_name}:/ efs",
-         "echo Y | sudo apt-get update",
          "echo Y | sudo apt-get install python",
          "echo Y | sudo apt-get install docker.io",
+         "echo Y | sudo apt-get install docker-compose",
          "echo Y | sudo apt-get install make",
          "git clone https://github.com/jgearheart/alpine-package-mirror.git",
          "cd alpine-package-mirror/",
